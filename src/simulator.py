@@ -70,7 +70,11 @@ class Simulator():
         Return: Matrix P       
         """
         return self.__arrayT
-        
+
+    @property
+    def memory_list(self):
+        return self.__memory
+                
     def __generate_matrixA_values(self):
         """This method is used to initialize matrix A with random values in the range between [0,1]      
         Args: None
