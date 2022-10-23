@@ -5,8 +5,8 @@ class Simulator():
     def __init__(self, nEnvironment: int, interval: tuple =(0, 10),matrixA: np.ndarray = None, matrixB: np.ndarray = None) -> None:
         self._nEnvironment = nEnvironment
         self.l, self.h = interval
-        self._matrixA = self.generate_matrixA_values() if matrixA is None else matrixA
-        self._matrixB = self.generate_matrixB_values() if matrixB is None else matrixB
+        self._matrixA = self.__generate_matrixA_values() if matrixA is None else matrixA
+        self._matrixB = self.__generate_matrixB_values() if matrixB is None else matrixB
 
     @property
     def nEnvironment(self):
@@ -32,14 +32,14 @@ class Simulator():
         """
         return self._matrixB
         
-    def generate_matrixA_values(self):
+    def __generate_matrixA_values(self):
         """This method is used to initialize matrix A with random values in the range between [0,1]      
         Args: None
         Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix A      
         """
         return np.random.rand(self._nEnvironment, self._nEnvironment)
 
-    def generate_matrixB_values(self):
+    def __generate_matrixB_values(self):
         """This method is used to initialize matrix A with random values in the range between [l,h],
         l and h have default values of 0 and 10 respectively.
         Args: None
