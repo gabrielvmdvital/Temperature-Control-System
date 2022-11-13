@@ -1,10 +1,10 @@
 import numpy as np
 
 
-class Simulator():
-    def __init__(self, nEnvironment: int, Ttarget: int = 20, interval: tuple =(0, 10), matrixA: np.ndarray = None, 
-                 matrixB: np.ndarray = None, matrixP: np.ndarray = None, arrayT: np.ndarray = None, 
-                 arrayU: np.ndarray = None) -> None:
+class Simulator:
+
+    def __init__(self, nEnvironment: int, arrayU: np.ndarray, interval: tuple =(0, 10), matrixA: np.ndarray = None,
+                 matrixB: np.ndarray = None, matrixP: np.ndarray = None, arrayT: np.ndarray = None) -> None:
         """This method is the constructor of the Simulator class
 
         Args: nEnvironment: Integer value
@@ -16,12 +16,11 @@ class Simulator():
         """
         self.__nEnvironment = nEnvironment
         self.l, self.h = interval
-        self.__Ttarget = np.full(self.__nEnvironment, Ttarget).T
         self.__matrixA = self.__generate_matrixA_values() if matrixA is None else matrixA
         self.__matrixB = self.__generate_matrixB_values() if matrixB is None else matrixB
         self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
-        self.__arrayT = self.__generate_arrayT_values() if arrayT is None else arrayT
-        self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU
+        self.__arrayT = self.__generate_arrayT_values() if arrayT is None else arrayT.T
+        self.__arrayU = arrayU
         self.__memory = [self.__arrayT]
 
     @property
@@ -31,14 +30,6 @@ class Simulator():
         Return: number of environments        
         """        
         return self.__nEnvironment
-
-    @property
-    def Ttarget(self):
-        """This method is a property used to return the temperature of control        
-        Args: None
-        Return: Temperature of control       
-        """        
-        return self.__Ttarget
 
     @property
     def matrixA(self):
@@ -122,24 +113,11 @@ class Simulator():
         Args: None
         Return: array T with updated values      
         """
-        self.__arrayT = self.__arrayT + (np.dot(self.__matrixA, self.__arrayT) + np.dot(self.__matrixB, self.__arrayU))
+        self.__arrayT = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, self.__arrayU))
         return self.arrayT
-
-
-    def update_arrayU(self):
-        """This method is used to update the values of the array of Potency
-        Args: None
-        Return: array U with updated values      
-        """
-        self.__arrayU = np.round(self.__arrayU - self.__arrayU + np.dot(self.__matrixP, (self.__Ttarget - self.__arrayT)))
-        return self.__arrayU
 
     def update_memory_list(self):
         return self.__memory.append(self.update_arrayT())
 
     def post_status_nEnvironment(self):            
         return self.__memory[-1]
-
-    def setup(self):
-        while True:
-           pass
