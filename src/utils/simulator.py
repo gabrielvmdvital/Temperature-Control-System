@@ -3,8 +3,8 @@ import numpy as np
 
 class Simulator:
 
-    def __init__(self, nEnvironment: int, arrayU: np.ndarray, interval: tuple =(0, 10), matrixA: np.ndarray = None,
-                 matrixB: np.ndarray = None, matrixP: np.ndarray = None, arrayT: np.ndarray = None) -> None:
+    def __init__(self, nEnvironment: int, interval: tuple =(0, 10), matrixA: np.ndarray = None,
+                 matrixB: np.ndarray = None, arrayT: np.ndarray = None) -> None:
         """This method is the constructor of the Simulator class
 
         Args: nEnvironment: Integer value
@@ -18,9 +18,7 @@ class Simulator:
         self.l, self.h = interval
         self.__matrixA = self.__generate_matrixA_values() if matrixA is None else matrixA
         self.__matrixB = self.__generate_matrixB_values() if matrixB is None else matrixB
-        self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
         self.__arrayT = self.__generate_arrayT_values() if arrayT is None else arrayT.T
-        self.__arrayU = arrayU
         self.__memory = [self.__arrayT]
 
     @property
@@ -46,23 +44,7 @@ class Simulator:
         Return: Matrix B        
         """
         return self.__matrixB
-
-    @property
-    def matrixP(self):
-        """This method is a property used to return the matrix P        
-        Args: None
-        Return: Matrix P       
-        """
-        return self.__matrixP
-    
-    @property
-    def arrayU(self):
-        """This method is a property used to return the array U        
-        Args: None
-        Return: Matrix P       
-        """
-        return self.__arrayU
-
+  
     @property
     def arrayT(self):
         """This method is a property used to return the array T    
@@ -89,17 +71,6 @@ class Simulator:
         Return: diagonal np.ndarray with dimensions (nEnvironment x nEnvironment)      
         """
         return np.eye(self.__nEnvironment, dtype=float)
-       
-
-    def __generate_matrixP_values(self):
-        """This method is used to initialize matrix A with random values in the range between [l,h],
-        l and h have default values of 0 and 10 respectively.
-        Args: None
-        Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix P     
-        """
-        random_matrix_float = np.random.rand(self.__nEnvironment, self.__nEnvironment)
-        random_matriz_int = np.random.randint(low=self.l+1, high=self.h+1, size=(self.__nEnvironment, self.__nEnvironment))
-        return random_matrix_float - random_matriz_int
 
     def __generate_arrayT_values(self):
         """This method is used to initialize array T with random values in the range between [15,35].
@@ -108,16 +79,16 @@ class Simulator:
         """
         return np.random.randint(low=15, high=35, size=self.__nEnvironment).T
 
-    def update_arrayT(self):
+    def update_arrayT(self, arrayU):
         """This method is used to update the values of the array of Temperature
         Args: None
         Return: array T with updated values      
         """
-        self.__arrayT = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, self.__arrayU))
+        self.__arrayT = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, arrayU))
         return self.arrayT
 
-    def update_memory_list(self):
-        return self.__memory.append(self.update_arrayT())
+    def update_memory_list(self, arrayU):
+        return self.__memory.append(self.update_arrayT(arrayU))
 
     def post_status_nEnvironment(self):            
         return self.__memory[-1]

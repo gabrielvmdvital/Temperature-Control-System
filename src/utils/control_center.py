@@ -4,11 +4,14 @@ import matplotlib.pyplot as plt
 
 class ControlCenter:
 
-    def __init__(self, nEnvironment: int, potency_limit: float, arrayU: np.ndarray = None, Ttarget: int = None):
+    def __init__(self, nEnvironment: int, potency_limit: float,  matrixP: np.ndarray = None, 
+                arrayU: np.ndarray = None, Ttarget: int = None):
+
         self.__nEnvironment = nEnvironment
         self.potency_limit = potency_limit
         self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU
         self.__Ttarget = np.full(self.__nEnvironment, 20).T if Ttarget is None else Ttarget
+        self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
         self.__memory_arrayT = []
         self.__memory_arrayU = []
 
@@ -40,6 +43,15 @@ class ControlCenter:
         """
         return self.__Ttarget
 
+    @property
+    def matrixP(self):
+        """This method is a property used to return the matrix P        
+        Args: None
+        Return: Matrix P       
+        """
+        return self.__matrixP
+    
+
     def update_arrayU(self, arrayT, Ttarget):
         """This method is used to update the values of the array of Potency
         Args: None
@@ -56,6 +68,16 @@ class ControlCenter:
                 arrayU_limited.append(potency)
 
         return arrayU_limited
+    
+    def __generate_matrixP_values(self):
+        """This method is used to initialize matrix A with random values in the range between [l,h],
+        l and h have default values of 0 and 10 respectively.
+        Args: None
+        Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix P     
+        """
+        random_matrix_float = np.random.rand(self.__nEnvironment, self.__nEnvironment)
+        random_matriz_int = np.random.randint(low=self.l+1, high=self.h+1, size=(self.__nEnvironment, self.__nEnvironment))
+        return random_matrix_float - random_matriz_int
 
     def post_upadate_arrayU(self):
         return self.__memory_arrayU[-1]
