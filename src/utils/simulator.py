@@ -3,7 +3,7 @@ import numpy as np
 
 class Simulator:
 
-    def __init__(self, nEnvironment: int, interval: tuple =(0, 10), matrixA: np.ndarray = None,
+    def __init__(self, nEnvironment: int, matrixA: np.ndarray = None,
                  matrixB: np.ndarray = None, arrayT: np.ndarray = None) -> None:
         """This method is the constructor of the Simulator class
 
@@ -15,7 +15,6 @@ class Simulator:
         Return: None
         """
         self.__nEnvironment = nEnvironment
-        self.l, self.h = interval
         self.__matrixA = self.__generate_matrixA_values() if matrixA is None else matrixA
         self.__matrixB = self.__generate_matrixB_values() if matrixB is None else matrixB
         self.__arrayT = self.__generate_arrayT_values() if arrayT is None else arrayT.T
@@ -49,7 +48,7 @@ class Simulator:
     def arrayT(self):
         """This method is a property used to return the array T    
         Args: None
-        Return: Matrix P       
+        Return: Array of temperature      
         """
         return self.__arrayT
 
@@ -84,11 +83,13 @@ class Simulator:
         Args: None
         Return: array T with updated values      
         """
-        self.__arrayT = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, arrayU))
-        return self.arrayT
+        dt = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, arrayU))
+        updatedT_values = [(self.__arrayT[i] + dt[i]) for i in range(len(self.__arrayT))]
+        self.__arrayT = dt
+        self.update_memory_list(updatedT_values)
 
-    def update_memory_list(self, arrayU):
-        return self.__memory.append(self.update_arrayT(arrayU))
+    def update_memory_list(self, arrayT):
+        return self.__memory.append(arrayT)
 
     def post_status_nEnvironment(self):            
         return self.__memory[-1]
