@@ -94,6 +94,16 @@ class Simulator:
         self.__arrayT = updatedT_values
         self.update_memory_list(updatedT_values)
 
+    def update_arrayT_with_for(self, arrayU):
+        temp = np.empty(self.__nEnvironment, dtype=float)
+        for i in range(len(temp)):
+            for j in range(len(self.__matrixA[i])):
+                temp[i] += (self.__matrixA[i][j]*(self.__arrayT[i] - self.__arrayT[j]))
+
+            temp[i] += self.__matrixB[i][i]*arrayU[i]
+        
+
+
     def update_memory_list(self, arrayT):
         return self.__memory.append(arrayT)
 
