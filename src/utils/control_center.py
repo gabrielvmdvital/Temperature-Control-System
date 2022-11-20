@@ -91,8 +91,8 @@ class ControlCenter:
     def get_arrayT(self, other) -> np.ndarray:
         return other.post_status_nEnvironment()
 
-    def update_memory_arrayT_list(self) -> None:
-        self.__memory_arrayT.append(self.get_arrayT())
+    def update_memory_arrayT_list(self, other) -> None:
+        self.__memory_arrayT.append(self.get_arrayT(other))
 
     def update_memory_arrayU_list(self) -> None:
         self.__memory_arrayU.append(
