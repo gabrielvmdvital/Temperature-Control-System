@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 
 
@@ -76,9 +77,13 @@ class ControlCenter:
         Args: None
         Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix P     
         """
-        random_matrix_float = np.random.rand(self.__nEnvironment, self.__nEnvironment)
-        random_matriz_int = np.random.randint(low=self.l+1, high=self.h+1, size=(self.__nEnvironment, self.__nEnvironment))
-        return random_matrix_float - random_matriz_int
+        aux_matrix = np.eye(self.__nEnvironment, dtype=float)
+        for i in range(len(aux_matrix)):
+            for j in range(len(aux_matrix[i])):
+                if i == j:
+                    aux_matrix[i][j] = random.randint(1, 2) + random.random()
+        
+        return aux_matrix
 
     def post_upadate_arrayU(self) -> np.ndarray:
         return self.__memory_arrayU[-1]

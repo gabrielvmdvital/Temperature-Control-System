@@ -61,7 +61,13 @@ class Simulator:
         Args: None
         Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix A      
         """
-        return np.random.rand(self.__nEnvironment, self.__nEnvironment)
+        aux_matrixA_values = np.random.rand(self.__nEnvironment, self.__nEnvironment)
+        for i in range(len(aux_matrixA_values)):
+            for j in range(len(aux_matrixA_values[i])):
+                if i == j:
+                    aux_matrixA_values[i][j] = 1
+                    
+        return aux_matrixA_values
 
     def __generate_matrixB_values(self):
         """This method is used to initialize diagonal matrix B representing the nth interaction 
@@ -85,7 +91,7 @@ class Simulator:
         """
         dt = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, arrayU))
         updatedT_values = [(self.__arrayT[i] + dt[i]) for i in range(len(self.__arrayT))]
-        self.__arrayT = dt
+        self.__arrayT = updatedT_values
         self.update_memory_list(updatedT_values)
 
     def update_memory_list(self, arrayT):
