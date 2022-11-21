@@ -78,7 +78,7 @@ class ControlCenter:
         return self.__matrixP
     
 
-    def update_arrayU(self, arrayT) -> np.ndarray:
+    def update_arrayU(self, arrayT) -> None:
         """This method is used to update the values of the array of Potency
         Args: None
         Return: array of potency with updated values
@@ -93,7 +93,7 @@ class ControlCenter:
             else:
                 arrayU_limited.append(potency)
 
-        return arrayU_limited
+        
     
     def __generate_matrixP_values(self) -> np.ndarray:
         """This method is used to initialize matrix A with random values in the range between [l,h],
