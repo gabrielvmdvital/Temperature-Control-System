@@ -8,9 +8,9 @@ class Simulator:
         """This method is the constructor of the Simulator class
 
         Args: nEnvironment: Integer value
-              interval: Tuple with integer values
               matrixA: Environment relationship matrix with float valus
               matrixB: Influence matrix of actuators in the environment
+              arrayT: array of temperature in environment
 
         Return: None
         """
@@ -95,6 +95,11 @@ class Simulator:
         self.update_memory_list(updatedT_values)
 
     def update_arrayT_with_for(self, arrayU):
+        """This method is used to update the values of the array of Temperature
+        Args: array with the new powers to reach the desired temperature
+        Return: array T with updated values      
+        """
+
         temp = np.empty(self.__nEnvironment, dtype=float)
         for i in range(len(temp)):
             for j in range(len(self.__matrixA[i])):
@@ -105,7 +110,24 @@ class Simulator:
 
 
     def update_memory_list(self, arrayT):
+        """this method is used to store in memory the array containing the temperature of the environments
+        Args: instance of Simulator class
+        Return: array T with updated values      
+        """
         return self.__memory.append(arrayT)
 
-    def post_status_nEnvironment(self):            
-        return self.__memory[-1]
+    def post_status_nEnvironment(self, other):
+        """this method is used to post the sending of temperature information from the 
+           control center to the simulator
+        Args: instance of ControlCenter class
+        Return: array T with updated values      
+        """            
+        return other.get_arrayT(self.__memory[-1])
+
+    def get_arrayU(self, other):
+        """this method is used to request the sending of temperature information from the 
+           control center to the simulator 
+        Args: instance of ControlCenter class
+        Return: array T with updated values      
+        """
+        return other.post_upadate_arrayU()
