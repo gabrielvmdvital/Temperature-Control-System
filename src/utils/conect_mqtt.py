@@ -20,6 +20,8 @@ if client.connect("localhost", 1883, 60) != 0:
 
 
 def publish(client, type_data: str, data_values: np.ndarray):
+    """
+    """
     for nEnviroments in range(len(data_values)):
         for data in range(len(data_values[nEnviroments])):
             client.publish(f"{type_data} {nEnviroments+1}", data_values[data], 0)
@@ -27,6 +29,8 @@ def publish(client, type_data: str, data_values: np.ndarray):
 
 
 def subscribe(client, type_data: str, data_values: np.ndarray):
+    """
+    """
     for nEnviroments in range(len(data_values)):
         for data in range(len(data_values[nEnviroments])):
             client.subscribe(f"{type_data} {nEnviroments+1}")
