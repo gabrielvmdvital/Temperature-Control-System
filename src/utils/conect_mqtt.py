@@ -24,15 +24,14 @@ def publish(client, type_data: str, data_values: np.ndarray):
     """
     for nEnviroments in range(len(data_values)):
         for data in range(len(data_values[nEnviroments])):
-            client.publish(f"{type_data} {nEnviroments+1}", data_values[data], 0)
+            client.publish(f"{type_data} environment {nEnviroments+1}", data_values[data], 0)
             time.sleep(0.3)
 
 
 def subscribe(client, type_data: str, data_values: np.ndarray):
     """
     """
-    for nEnviroments in range(len(data_values)):
-        for data in range(len(data_values[nEnviroments])):
-            client.subscribe(f"{type_data} {nEnviroments+1}")
-            time.sleep(0.3)
+    for nEnviroments_values in range(len(data_values)):
+        client.subscribe(f"{type_data} {nEnviroments_values+1}")
+        time.sleep(0.3)
 
