@@ -14,21 +14,19 @@ def run():
     if client.connect("localhost", 1883, 60) != 0:
         print("Could not connect to MQTT Broker!")
         sys.exit(-1)
-    timeCount = 0
-    iteration = 1
+    count = 0
     while True:
-        print(f"iteração: {iteration}")
+        print(f"iteração: {count+1}")
         lst = []
-        if timeCount == 10:
+        if count == 10:
             lst = np.array(lst)
             conect_mqtt.publish(client=client, type_data="Temperatura", data_values=lst)
-            timeCount = 0
+            count = 0
         env1.append(random.randint(15, 28))
         env2.append(random.randint(15, 28))
         env3.append(random.randint(15, 28))
         lst = [env1, env2, env3]
-        timeCount += 1
-        iteration += 1
+        count += 1
         time.sleep(1)
         
         
