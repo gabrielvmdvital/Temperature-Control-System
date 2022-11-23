@@ -16,7 +16,7 @@ def run():
         sys.exit(-1)
     count = 0
     while True:
-        print(f"iteração: 1")
+        print(f"iteração: {count+1}")
         lst = []
         if count == 10:
             lst = np.array(lst)
@@ -33,5 +33,4 @@ def run():
 
 
 if __name__ == "__main__":
-    
     run()
