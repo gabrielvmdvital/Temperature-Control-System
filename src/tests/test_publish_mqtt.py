@@ -6,7 +6,7 @@ import numpy as np
 import random
 
 def run():
-    env1, env2, env3 = [0], [0], [0]
+    env1, env2, env3 = [random.randint(15, 28)], [random.randint(15, 28)], [random.randint(15, 28)]
     client = paho.Client()
     client.on_message = conect_mqtt.onMessage
 
