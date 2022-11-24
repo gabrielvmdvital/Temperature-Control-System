@@ -45,7 +45,7 @@ def run():
     timeCount = 1
     iteration = 1
     lst = []
-    publish(client=client, type_data="Temperatura", data_values=env1+env2+env3, mqttPT=mqtt_publish_topic)
+    conect_mqtt.publish2(client=client, type_data="Temperatura", data_values=env1+env2+env3, mqttPT=mqtt_publish_topic)
     while True:
         print(f"Interation: {iteration}") 
         if timeCount == 10:
