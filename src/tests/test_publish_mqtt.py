@@ -1,20 +1,24 @@
 import paho.mqtt.client as mqtt
 import sys
+import os
 import random
 import time
 import json
 import tago
 import numpy as np
-# Definitions
-# put here your device token
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath("src/utils/conect_mqtt.py"))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+
+from utils import conect_mqtt
 def publish(client, type_data: str, data_values: np.ndarray, mqttPT: str) -> None:
     lst_dict = []
     for index in range(len(data_values)):
-        lst_dict.append({"variable": f"{type_data}_{index+1}", 
+        lst_dict.append({"variable": f"{type_data}_environment_{index+1}", 
                         "unit": "F", "value": data_values[index]})
-    for data in lst_dict:
-        client.publish(mqttPT, json.dumps(data))
+
+    for index in range(len(lst_dict)):
+        client.publish(mqttPT, json.dumps(lst_dict[index]))
         time.sleep(.3)
     print(lst_dict)     
 
@@ -50,18 +54,16 @@ def run():
     client.on_connect = on_connect
     client.connect(broker, broker_port, mqtt_keep_alive)
 
-    timeCount = 0
+    timeCount = 1
     iteration = 1
     lst = []
-    initedT = env1+env2+env3
-    publish(client=client, type_data="Temperatura", data_values=initedT, mqttPT=mqtt_publish_topic)
+    publish(client=client, type_data="Temperatura", data_values=env1+env2+env3, mqttPT=mqtt_publish_topic)
     while True:
-        timeCount += 1
         print(f"Interation: {iteration}") 
-        if timeCount == 2:
-            env1.append(random.randint(15, 28))
-            env2.append(random.randint(15, 28))
-            env3.append(random.randint(15, 28))
+        if timeCount == 10:
+            env1.append(random.randint(18, 22))
+            env2.append(random.randint(18, 22))
+            env3.append(random.randint(18, 22))
             lst =[env1[-1], env2[-1], env3[-1]]
             publish(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
             lst = []
@@ -70,6 +72,7 @@ def run():
        # print(lst)
         
         iteration += 1
+        timeCount += 1
         time.sleep(1)
 
         
