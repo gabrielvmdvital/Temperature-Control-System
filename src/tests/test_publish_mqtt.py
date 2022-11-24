@@ -8,54 +8,59 @@ import tago
 import numpy as np
 # Definitions
 # put here your device token
-device_token = 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d'
 
-broker = "mqtt.tago.io"
-broker_port = 1883
-mqtt_keep_alive = 60
+def run():
+    device_token = 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d'
 
-# MQTT publish topic must be tago/data/post
-mqtt_publish_topic = "tago/data/post"
+    broker = "mqtt.tago.io"
+    broker_port = 1883
+    mqtt_keep_alive = 60
 
-# put any name here, TagoIO doesn't validate this username.
-mqtt_username = 'eduardoalexandree.ps@gmail.com'
+    # MQTT publish topic must be tago/data/post
+    mqtt_publish_topic = "tago/data/post"
 
-# MQTT password must be the device token (TagoIO does validate this password)
-mqtt_password = device_token
+    # put any name here, TagoIO doesn't validate this username.
+    mqtt_username = 'eduardoalexandree.ps@gmail.com'
 
-# Callback - MQTT broker connection is on
+    # MQTT password must be the device token (TagoIO does validate this password)
+    mqtt_password = device_token
 
-env1, env2, env3 = [random.randint(15, 28)], [random.randint(15, 28)], [random.randint(15, 28)]
+    # Callback - MQTT broker connection is on
 
-
-def on_connect(client, userdata, flags, rc):
-    print("[STATUS] Connected to MQTT broker. Result: " + str(rc))
+    env1, env2, env3 = [random.randint(15, 28)], [random.randint(15, 28)], [random.randint(15, 28)]
 
 
-# Main program
-print("[STATUS] Initializing MQTT...")
-client = mqtt.Client()
-client.username_pw_set(mqtt_username, mqtt_password)
-client.on_connect = on_connect
-client.connect(broker, broker_port, mqtt_keep_alive)
+    def on_connect(client, userdata, flags, rc):
+        print("[STATUS] Connected to MQTT broker. Result: " + str(rc))
 
-timeCount = 0
-iteration = 1
-while True:
-    print(f"Iteração: {iteration}") 
-    if timeCount == 10:
-        lst = np.array([env1, env2, env3])
-        conect_mqtt.publish(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
-        timeCount = 0
-        lst = []
-    env1.append(random.randint(15, 28))
-    env2.append(random.randint(15, 28))
-    env3.append(random.randint(15, 28))
-    lst = [env1, env2, env3]
-    timeCount += 1
-    iteration += 1
-    time.sleep(1)
 
-    
+    # Main program
+    print("[STATUS] Initializing MQTT...")
+    client = mqtt.Client()
+    client.username_pw_set(mqtt_username, mqtt_password)
+    client.on_connect = on_connect
+    client.connect(broker, broker_port, mqtt_keep_alive)
 
-print("Data sent to TagoIO platform")
+    timeCount = 0
+    iteration = 1
+    while True:
+        print(f"Iteração: {iteration}") 
+        if timeCount == 10:
+            lst = np.array([env1, env2, env3])
+            conect_mqtt.publish(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
+            timeCount = 0
+            lst = []
+        env1.append(random.randint(15, 28))
+        env2.append(random.randint(15, 28))
+        env3.append(random.randint(15, 28))
+        lst = [env1, env2, env3]
+        timeCount += 1
+        iteration += 1
+        time.sleep(1)
+
+        
+
+    print("Data sent to TagoIO platform")
+
+if __name__ == "__main__":
+    run()
