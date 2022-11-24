@@ -1,24 +1,15 @@
 import numpy as np
+import importlib
 import os, sys, time, json, tago, random
 import paho.mqtt.client as mqtt
-SCRIPT_DIR = os.path.dirname(os.path.abspath("src/utils/conect_mqtt.py"))
+SCRIPT_DIR = os.path.dirname(os.path.abspath("src/utils/__init__.py"))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 from utils import conect_mqtt
+importlib.reload(conect_mqtt)
 
 
 
 
-
-def publish(client, type_data: str, data_values: np.ndarray, mqttPT: str) -> None:
-    lst_dict = []
-    for index in range(len(data_values)):
-        lst_dict.append({"variable": f"{type_data}_environment_{index+1}", 
-                        "unit": "F", "value": data_values[index]})
-
-    for index in range(len(lst_dict)):
-        client.publish(mqttPT, json.dumps(lst_dict[index]))
-        time.sleep(.3)
-    print(lst_dict)     
 
 def run():
     device_token = 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d'
@@ -62,7 +53,7 @@ def run():
             env2.append(random.randint(18, 22))
             env3.append(random.randint(18, 22))
             lst =[env1[-1], env2[-1], env3[-1]]
-            conect_mqtt.publish2(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
+            conect_mqtt.publish2(client=client, type_data="Potencia", data_values=lst, mqttPT=mqtt_publish_topic)
             lst = []
             timeCount = 0
 
