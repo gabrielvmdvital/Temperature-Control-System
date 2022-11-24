@@ -1,5 +1,4 @@
 import paho.mqtt.client as mqtt
-from utils import conect_mqtt
 import sys
 import random
 import time
@@ -8,6 +7,17 @@ import tago
 import numpy as np
 # Definitions
 # put here your device token
+
+def publish(client, type_data: str, data_values: np.ndarray, mqttPT: str) -> None:
+    lst_dict = []
+    count = 0
+    for data in data_values:
+        lst_dict.append({"variable": f"{type_data}_{count+1}", 
+                        "unit": "F", "value": data})
+        client.publish(mqttPT, json.dumps(lst_dict[count]))  
+        count += 1
+    print(lst_dict)     
+
 
 def run():
     device_token = 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d'
@@ -29,7 +39,6 @@ def run():
 
     env1, env2, env3 = [random.randint(15, 28)], [random.randint(15, 28)], [random.randint(15, 28)]
 
-
     def on_connect(client, userdata, flags, rc):
         print("[STATUS] Connected to MQTT broker. Result: " + str(rc))
 
@@ -41,19 +50,22 @@ def run():
     client.on_connect = on_connect
     client.connect(broker, broker_port, mqtt_keep_alive)
 
-    timeCount = 0
+    timeCount = 1
     iteration = 1
-    while True:
-        print(f"Iteração: {iteration}") 
+    lst = []
+    publish(client=client, type_data="Temperatura", data_values=env1+env2+env3, mqttPT=mqtt_publish_topic)
+    while True:        
+        print(f"Interation: {iteration}") 
         if timeCount == 10:
-            lst = np.array([env1, env2, env3])
-            conect_mqtt.publish(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
-            timeCount = 0
+            env1.append(random.randint(15, 28))
+            env2.append(random.randint(15, 28))
+            env3.append(random.randint(15, 28))
+            lst =[env1[-1], env2[-1], env3[-1]]
+            publish(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
             lst = []
-        env1.append(random.randint(15, 28))
-        env2.append(random.randint(15, 28))
-        env3.append(random.randint(15, 28))
-        lst = [env1, env2, env3]
+            timeCount = 0
+
+       # print(lst)
         timeCount += 1
         iteration += 1
         time.sleep(1)
