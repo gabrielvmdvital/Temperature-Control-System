@@ -10,12 +10,12 @@ import numpy as np
 
 def publish(client, type_data: str, data_values: np.ndarray, mqttPT: str) -> None:
     lst_dict = []
-    count = 0
-    for data in data_values:
-        lst_dict.append({"variable": f"{type_data}_{count+1}", 
-                        "unit": "F", "value": data})
-        client.publish(mqttPT, json.dumps(lst_dict[count]))  
-        count += 1
+    for index in range(len(data_values)):
+        lst_dict.append({"variable": f"{type_data}_{index+1}", 
+                        "unit": "F", "value": data_values[index]})
+    for data in lst_dict:
+        client.publish(mqttPT, json.dumps(data))
+        time.sleep(.3)
     print(lst_dict)     
 
 
@@ -50,13 +50,15 @@ def run():
     client.on_connect = on_connect
     client.connect(broker, broker_port, mqtt_keep_alive)
 
-    timeCount = 1
+    timeCount = 0
     iteration = 1
     lst = []
-    publish(client=client, type_data="Temperatura", data_values=env1+env2+env3, mqttPT=mqtt_publish_topic)
-    while True:        
+    initedT = env1+env2+env3
+    publish(client=client, type_data="Temperatura", data_values=initedT, mqttPT=mqtt_publish_topic)
+    while True:
+        timeCount += 1
         print(f"Interation: {iteration}") 
-        if timeCount == 10:
+        if timeCount == 2:
             env1.append(random.randint(15, 28))
             env2.append(random.randint(15, 28))
             env3.append(random.randint(15, 28))
@@ -66,7 +68,7 @@ def run():
             timeCount = 0
 
        # print(lst)
-        timeCount += 1
+        
         iteration += 1
         time.sleep(1)
 
