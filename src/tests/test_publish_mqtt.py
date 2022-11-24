@@ -62,7 +62,7 @@ def run():
             env2.append(random.randint(18, 22))
             env3.append(random.randint(18, 22))
             lst =[env1[-1], env2[-1], env3[-1]]
-            conect_mqtt.publish(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
+            conect_mqtt.publish2(client=client, type_data="Temperatura", data_values=lst, mqttPT=mqtt_publish_topic)
             lst = []
             timeCount = 0
 
