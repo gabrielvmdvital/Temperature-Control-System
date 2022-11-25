@@ -116,7 +116,7 @@ class Simulator:
         """
         self.__memory.append(arrayT)
 
-    def post_status_nEnvironment(self, other) -> np.ndarray:
+    def post_temperature_status(self, other) -> np.ndarray:
         """this method is used to post the sending of temperature information from the 
            control center to the simulator
         Args: instance of ControlCenter class
