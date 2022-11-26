@@ -19,12 +19,11 @@ class ControlCenter:
 
         Return: None
         """
-
         self.__nEnvironment = nEnvironment
         self.potency_limit = potency_limit
         self.l, self.h = interval
-        self.__arrayU = np.zeros(self.__nEnvironment, dtype=int) if arrayU is None else arrayU.T
-        self.__Ttarget = np.full(self.__nEnvironment, 20).T if Ttarget is None else Ttarget.T
+        self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU.T
+        self.__Ttarget = np.full(self.__nEnvironment, 20.0).T if Ttarget is None else Ttarget.T
         self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
         self.__memory_arrayT = []
         self.__memory_arrayU = [self.__arrayU]
@@ -83,30 +82,35 @@ class ControlCenter:
         Args: None
         Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix P     
         """
+        print("Initializing the diagonal matrix P")
         aux_matrix = np.eye(self.__nEnvironment, dtype=float)
         for i in range(len(aux_matrix)):
             for j in range(len(aux_matrix[i])):
                 if i == j:
                     aux_matrix[i][j] = random.randint(1, 2) + random.random()
-        
-        return aux_matrix
+        print(aux_matrix/100)
+        return aux_matrix/100
 
     def update_arrayU(self) -> None:
         """This method is used to update the values of the array of Potency
         Args: None
         Return: array of potency with updated values
         """
-        arrayU_limited = np.empty(self.__nEnvironment, dtype=int)
+        print("Calculating the new power data for the system")
+        arrayU_limited = np.empty(self.__nEnvironment, dtype=float)
         arrayT = self.__memory_arrayT[-1]
-        self.__arrayU = np.round(np.dot(self.__matrixP, (self.__Ttarget - arrayT)))
+        self.__arrayU = np.dot(self.__matrixP, (self.__Ttarget - arrayT))
         for index in range(len(self.__arrayU)):
-            if self.__arrayU[index] > self.potency_limit:
-                arrayU_limited[index] = self.potency_limit
+            if self.__arrayU[index] > 1 or self.__arrayU[index] < -1:
+                arrayU_limited[index] = 1
+            elif self.__arrayU[index] < -1:
+                arrayU_limited[index] = -1
             else:
                 arrayU_limited[index] = self.__arrayU[index]
 
         self.__arrayU = arrayU_limited
         self.update_memory_arrayU_list(self.__arrayU)
+        co
         return arrayU_limited
 
     def post_upadate_arrayU(self) -> np.ndarray:
@@ -114,6 +118,7 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
+        print("Sending the new power values")
         return self.__memory_arrayU[-1]
 
     def get_arrayT(self, other) -> np.ndarray:
@@ -122,6 +127,7 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
+        print("Requesting room temperature data")
         return other.post_temperature_status()
 
     def update_memory_arrayT_list(self, arrayT) -> None:
@@ -129,6 +135,7 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
+        print("Storing the temperature values of the environments")
         self.__memory_arrayT.append(arrayT)
 
     def update_memory_arrayU_list(self, arrayU) -> None:
@@ -136,6 +143,7 @@ class ControlCenter:
         Args: None
         Return: array T with updated values      
         """
+        print("Storing the new power data for the system")
         self.__memory_arrayU.append(arrayU)
 
     
