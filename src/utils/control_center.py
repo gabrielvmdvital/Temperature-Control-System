@@ -23,11 +23,11 @@ class ControlCenter:
         self.__nEnvironment = nEnvironment
         self.potency_limit = potency_limit
         self.l, self.h = interval
-        self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU.T
+        self.__arrayU = np.zeros(self.__nEnvironment, dtype=int) if arrayU is None else arrayU.T
         self.__Ttarget = np.full(self.__nEnvironment, 20).T if Ttarget is None else Ttarget.T
         self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
         self.__memory_arrayT = []
-        self.__memory_arrayU = []
+        self.__memory_arrayU = [self.__arrayU]
 
     @property
     def arrayU(self) -> np.ndarray:
@@ -75,25 +75,7 @@ class ControlCenter:
         Args: None
         Return: Matrix P       
         """
-        return self.__matrixP
-    
-
-    def update_arrayU(self, arrayT) -> None:
-        """This method is used to update the values of the array of Potency
-        Args: None
-        Return: array of potency with updated values
-        """
-        arrayU_limited = []
-        self.__arrayU = np.round(
-            self.__arrayU - self.__arrayU + np.dot(self.__matrixP, (self.__Ttarget - arrayT))
-        )
-        for potency in self.__arrayU:
-            if potency > self.potency_limit:
-                arrayU_limited.append(self.potency_limit)
-            else:
-                arrayU_limited.append(potency)
-
-        
+        return self.__matrixP        
     
     def __generate_matrixP_values(self) -> np.ndarray:
         """This method is used to initialize matrix A with random values in the range between [l,h],
@@ -109,6 +91,24 @@ class ControlCenter:
         
         return aux_matrix
 
+    def update_arrayU(self) -> None:
+        """This method is used to update the values of the array of Potency
+        Args: None
+        Return: array of potency with updated values
+        """
+        arrayU_limited = np.empty(self.__nEnvironment, dtype=int)
+        arrayT = self.__memory_arrayT[-1]
+        self.__arrayU = np.round(np.dot(self.__matrixP, (self.__Ttarget - arrayT)))
+        for index in range(len(self.__arrayU)):
+            if self.__arrayU[index] > self.potency_limit:
+                arrayU_limited[index] = self.potency_limit
+            else:
+                arrayU_limited[index] = self.__arrayU[index]
+
+        self.__arrayU = arrayU_limited
+        self.update_memory_arrayU_list(self.__arrayU)
+        return arrayU_limited
+
     def post_upadate_arrayU(self) -> np.ndarray:
         """this method is used to post updated power values
         Args: instance of Simulator class
@@ -122,23 +122,21 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
-        return other.post_status_nEnvironment()
+        return other.post_temperature_status()
 
-    def update_memory_arrayT_list(self, other) -> None:
+    def update_memory_arrayT_list(self, arrayT) -> None:
         """this method is used to store in memory the array containing the temperature of the environments
         Args: instance of Simulator class
         Return: array T with updated values      
         """
-        self.__memory_arrayT.append(self.get_arrayT(other))
+        self.__memory_arrayT.append(arrayT)
 
-    def update_memory_arrayU_list(self) -> None:
+    def update_memory_arrayU_list(self, arrayU) -> None:
         """this method is used to store in memory the array containing the potency of the environments
         Args: None
         Return: array T with updated values      
         """
-        self.__memory_arrayU.append(
-            self.update_arrayU(self.__memory_arrayT[-1], self.__Ttarget)
-        )
+        self.__memory_arrayU.append(arrayU)
 
     
     def organize_dataMemory_list_to_plot(self) -> np.ndarray:

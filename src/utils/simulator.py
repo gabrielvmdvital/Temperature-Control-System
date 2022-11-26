@@ -67,7 +67,7 @@ class Simulator:
                 if i == j:
                     aux_matrixA_values[i][j] = 1
                     
-        return aux_matrixA_values
+        return aux_matrixA_values.tolist()
 
     def __generate_matrixB_values(self) -> np.ndarray:
         """This method is used to initialize diagonal matrix B representing the nth interaction 
@@ -86,27 +86,19 @@ class Simulator:
 
     def update_arrayT(self, arrayU) -> None:
         """This method is used to update the values of the array of Temperature
-        Args: None
-        Return: array T with updated values      
-        """
-        dt = (np.dot(self.__matrixA, self.__arrayT) - np.dot(self.__matrixB, arrayU))
-        updatedT_values = [(self.__arrayT[i] + dt[i]) for i in range(len(self.__arrayT))]
-        self.__arrayT = updatedT_values
-        self.update_memory_list(updatedT_values)
-
-    def update_arrayT_with_for(self, arrayU) -> None:
-        """This method is used to update the values of the array of Temperature
         Args: array with the new powers to reach the desired temperature
         Return: array T with updated values      
         """
 
-        temp = np.empty(self.__nEnvironment, dtype=float)
+        temp = np.empty(self.__nEnvironment)
         for i in range(len(temp)):
             for j in range(len(self.__matrixA[i])):
                 temp[i] += (self.__matrixA[i][j]*(self.__arrayT[i] - self.__arrayT[j]))
 
             temp[i] += self.__matrixB[i][i]*arrayU[i]
-        
+        temp = temp.astype(int)
+        self.update_memory_list(temp)
+        return temp
 
 
     def update_memory_list(self, arrayT: np.ndarray) -> None:
@@ -116,13 +108,14 @@ class Simulator:
         """
         self.__memory.append(arrayT)
 
-    def post_temperature_status(self, other) -> np.ndarray:
+    def post_temperature_status(self) -> np.ndarray:
         """this method is used to post the sending of temperature information from the 
            control center to the simulator
         Args: instance of ControlCenter class
         Return: array T with updated values      
-        """            
-        return other.get_arrayT(self.__memory[-1])
+        """
+        print("sending the temperature information of the environments")
+        return self.__memory[-1]
 
     def get_arrayU(self, other) -> np.ndarray:
         """this method is used to request the sending of temperature information from the 
