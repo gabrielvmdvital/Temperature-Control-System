@@ -126,30 +126,8 @@ class Simulator:
 
         aux = self.__arrayT + temp  
         self.update_memory_list(aux)        
-        self.__arrayT =+ aux
+        self.__arrayT = aux
         return aux
-
-    def update_arrayT2(self, arrayU) -> None:
-            """This method is used to update the values of the array of Temperature
-            Args: array with the new powers to reach the desired temperature
-            Return: array T with updated values      
-            """
-            h = (self.nEnvironment)/1000
-            k1 = np.empty(self.__nEnvironment)
-            k2 = np.empty(self.__nEnvironment)
-            temp = np.empty(self.__nEnvironment)
-            for i in range(len(temp)):
-                for j in range(len(self.__matrixA[i])):
-                    k1[i] += (self.__matrixA[i][j]*(self.__arrayT[i] - self.__arrayT[j]))
-                    k2[i] += (self.__matrixA[i][j] + h)*(self.__arrayT[i] - self.__arrayT[j])
-                    temp[i] += (self.__matrixA[i][j]*(self.__arrayT[i] - self.__arrayT[j]))
-
-                k1 += self.__matrixB[i][i]*arrayU[i]
-                k2 += (self.__matrixB[i][i]+h)*arrayU[i]
-            temp = temp + .5*(k1+k2)*h
-            temp = temp.astype(int)
-            self.update_memory_list(temp)
-            return temp
 
     def update_memory_list(self, arrayT: np.ndarray) -> None:
         """this method is used to store in memory the array containing the temperature of the environments
@@ -167,10 +145,10 @@ class Simulator:
         print("sending the temperature information of the environments")
         return self.__memory[-1]
 
-    def get_arrayU(self, other) -> np.ndarray:
+    def get_arrayU(self, client, data_dict: dict) -> np.ndarray:
         """this method is used to request the sending of temperature information from the 
            control center to the simulator 
         Args: instance of ControlCenter class
         Return: array T with updated values      
         """
-        return other.post_upadate_arrayU()
+        return client.subscribe(data_dict)

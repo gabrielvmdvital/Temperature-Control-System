@@ -1,10 +1,12 @@
 import numpy as np
 import paho.mqtt.client as mqtt
+import paho.mqtt.subscribe as pmqttSub
+import paho.mqtt.publish as pmqttPub
 import sys, time, json, tago, random
 
 
 
-class Conect_mqtt:
+class ConectMqtt:
 
     def __init__(self, host: str = "localhost", broker_tago_port: int = 1883, mqtt_keep_alive_tago: int = 60,
                  device_tago_token: str= 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d', broker_tago = "mqtt.tago.io",
@@ -35,36 +37,34 @@ class Conect_mqtt:
         self.client.username_pw_set(self.__mqtt_username, self.__mqtt_password)
         self.client.on_connect = self.on_connect
         self.client.connect(self.__broker_tago, self.__broker_tago_port, self.__mqtt_keep_alive_tago)
-        
-    def start_connection_moskito(self):
-        pass
-
 
     def publish_tago(self, client, type_data: str, data_values: np.ndarray, mqttPT: str) -> None:
         data_unit = {"temperatura": "°C",
                         "potencia": "BTU"}
         for index in range(len(data_values)):
             element = {"variable": f"{type_data.capitalize()}_environment_{index+1}", 
-                            "unit": data_unit[type_data.lower()].capitalize(), "value": data_values[index]}
+                            "unit": data_unit[type_data.lower()].capitalize(), "value": int(data_values[index])}
 
             self.client.publish(mqttPT, json.dumps(element))
             time.sleep(.3)
-        
-    def publish_mosquitto(self):
-        pass
-
     
-    def subscribe(client, type_data: str, data_values: np.ndarray):
-        """
-        """
-        for nEnviroments_values in range(len(data_values)):
-            client.subscribe(f"{type_data} {nEnviroments_values+1}")
-            time.sleep(0.3)
+    def publish_mosquitto(self, nEnvironments: int, topic_type: str, data_values):
+        for index in range(nEnvironments):
+            pmqttPub.single(f"{topic_type.capitalize()}_environment_{index+1}", f"{data_values[index]}", hostname=self.__host)
+
+        
+    def subscribe(self, nEnvironments: int, topic_type: str):
+        subscribe_data = np.empty(nEnvironments)
+        for index in range(nEnvironments):
+            msg = pmqttSub.simple(f"{topic_type.capitalize()}_environment_{index+1}", hostname=self.__host)
+            subscribe_data[index] = float(msg.payload)
+        return subscribe_data
+    
 
 
 if __name__ == "__main__":
 
-    clt = Conect_mqtt()
+    clt = ConectMqtt()
     clt.start_connection_tago()
     env1, env2, env3 = [random.randint(15, 28)], [random.randint(15, 28)], [random.randint(15, 28)]
     timeCount = 1
