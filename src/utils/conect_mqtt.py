@@ -10,11 +10,12 @@ repackage.up()
 
 class ConectMqtt:
 
-    def __init__(self, host: str = "localhost", broker_tago_port: int = 1883, mqtt_keep_alive_tago: int = 60,
+    def __init__(self, nEnvironments: int, function, host: str = "localhost", broker_tago_port: int = 1883, mqtt_keep_alive_tago: int = 60,
                  device_tago_token: str= 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d', broker_tago = "mqtt.tago.io",
                  mqtt_publish_topic: str = "tago/data/post", mqtt_username: str = 'eduardoalexandree.ps@gmail.com',
-                 mqtt_password: str = 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d', ) -> None:
+                 mqtt_password: str = 'cc8d3e6a-eab9-4b3f-8cf7-3a0cb850f50d') -> None:
         
+        self.nEnvironments = nEnvironments
         self.__host = host
         self.__port = broker_tago_port
         self.__mqtt_keep_alive_tago = mqtt_keep_alive_tago
@@ -25,6 +26,7 @@ class ConectMqtt:
         self.__mqtt_username = mqtt_username
         self.__mqtt_password = mqtt_password
         self.client = None
+        self.function = function
 
 
     def on_connect(client, userdata, flags, rc):
@@ -61,16 +63,34 @@ class ConectMqtt:
             time.sleep(.3)
             pmqttPub.single(f"{topic_type.capitalize()}_environment_{index+1}", f"{data_values[index]}", hostname=self.__host)
 
-        
+    def publish_mosquitto2(self, topic_type: str, data_values):
+        print("[STATUS] - Publishing to Mosquitto")
+        data_values_bytearray = data_values.astype(np.float32).tobytes()
+        pmqttPub.single(f"{topic_type.capitalize()}", f"{data_values_bytearray}", hostname=self.__host)
+        print(f"seeding bytearry: {data_values_bytearray}")
+
     def subscribe(self, nEnvironments: int, topic_type: str):
-        print("[STATUS] - Subscrite from Mosquitto")
+        print("[STATUS] - Subscrite in Mosquitto")
         subscribe_data =np.empty(nEnvironments)
         for index in range(nEnvironments):
             msg = pmqttSub.simple(f"{topic_type.capitalize()}_environment_{index+1}", hostname=self.__host)
             subscribe_data[index] = float(msg.payload)
         return subscribe_data
-    
 
+    def subscribe2(self, topic_type: str):
+        print("[STATUS] - Subscrite in Mosquitto")
+        pmqttSub.callback(self.on_message_print(topic_type=topic_type), topic_type, self.__host)
+        
+
+    def on_message_print(self, topic_type: str):
+        name_topic = topic_type.capitalize()
+        message = pmqttSub.simple(f"{topic_type.capitalize()}", hostname=self.__host)
+        topic_publish= {"Temperatura": "Potencia",
+                      "Potencia": "Temperatura"}[name_topic]
+        array = np.frombuffer(message.payload, dtype=np.float32)
+        data_values = self.function(array)
+        self.publish_tago(client=self.client, type_data=topic_publish, data_values=data_values, mqttPT=self.mqtt_publish_topic)
+        self.publish_mosquitto(self.nEnvironments, topic_type=topic_publish, data_values=data_values)
 
 if __name__ == "__main__":
 
