@@ -93,7 +93,7 @@ class Simulator:
                      aux_matrixA_values[i][j] =  aux_matrixA_values[i][j]/10
 
         print("Initializing matrix A with random values and unit diagonal")
-        print(aux_matrixA_values)         
+        #print(aux_matrixA_values)         
         return aux_matrixA_values
 
     def __generate_matrixB_values(self) -> np.ndarray:
@@ -134,7 +134,7 @@ class Simulator:
         self.update_memory_list(aux)        
         self.__arrayT = aux
         print(f"[STATUS] -> New Temperature array: {self.__arrayT}")
-        #return aux
+        return aux
 
     def update_memory_list(self, arrayT: np.ndarray) -> None:
         """this method is used to store in memory the array containing the temperature of the environments

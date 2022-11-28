@@ -90,7 +90,7 @@ class ControlCenter:
             for j in range(len(aux_matrix[i])):
                 if i == j:
                     aux_matrix[i][j] = random.randint(1, 2) + random.random()
-        print(aux_matrix/10)
+        #print(aux_matrix/10)
         return aux_matrix/10
 
     def update_arrayU(self, arrayT: np.ndarray) -> None:
@@ -110,8 +110,9 @@ class ControlCenter:
                 arrayU_limited[index] = self.__arrayU[index]
 
         self.__arrayU = arrayU_limited
+        self.update_memory_arrayU_list(arrayU_limited)
         print(f"[STATUS] -> New potency array: {self.__arrayU}")
-        #return arrayU_limited
+        return arrayU_limited
 
     def post_upadate_arrayU(self) -> np.ndarray:
         """this method is used to post updated power values
