@@ -4,6 +4,8 @@ import os, sys, time, json, tago, random
 import paho.mqtt.client as mqtt
 SCRIPT_DIR = os.path.dirname(os.path.abspath("src/utils/__init__.py"))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
+import repackage
+repackage.up()
 from utils import conect_mqtt
 importlib.reload(conect_mqtt)
 

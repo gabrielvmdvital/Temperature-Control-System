@@ -6,6 +6,8 @@ import paho.mqtt.publish as pmqttPub
 import numpy as np
 SCRIPT_DIR = os.path.dirname(os.path.abspath("src/utils/conect_mqtt.py"))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
+import repackage
+repackage.up()
 from utils import simulator, control_center
 importlib.reload(simulator)
 importlib.reload(control_center)
