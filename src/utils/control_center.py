@@ -22,8 +22,8 @@ class ControlCenter:
         self.__nEnvironment = nEnvironment
         self.potency_limit = potency_limit
         self.l, self.h = interval
-        self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU.T
-        self.__Ttarget = np.full(self.__nEnvironment, 20.0).T if Ttarget is None else Ttarget.T
+        self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU
+        self.__Ttarget = np.full(self.__nEnvironment, 20.0) if Ttarget is None else Ttarget
         self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
         self.__memory_arrayT = []
         self.__memory_arrayU = [self.__arrayU]
@@ -88,30 +88,28 @@ class ControlCenter:
             for j in range(len(aux_matrix[i])):
                 if i == j:
                     aux_matrix[i][j] = random.randint(1, 2) + random.random()
-        print(aux_matrix/100)
-        return aux_matrix/100
+        print(aux_matrix/10)
+        return aux_matrix/10
 
-    def update_arrayU(self) -> None:
+    def update_arrayU(self, arrayT: np.ndarray) -> None:
         """This method is used to update the values of the array of Potency
         Args: None
         Return: array of potency with updated values
         """
         print("Calculating the new power data for the system")
         arrayU_limited = np.empty(self.__nEnvironment, dtype=float)
-        arrayT = self.__memory_arrayT[-1]
         self.__arrayU = np.dot(self.__matrixP, (self.__Ttarget - arrayT))
         for index in range(len(self.__arrayU)):
-            if self.__arrayU[index] > 1 or self.__arrayU[index] < -1:
+            if self.__arrayU[index] > 1:
                 arrayU_limited[index] = 1
-            elif self.__arrayU[index] < -1:
+            if self.__arrayU[index] < -1:
                 arrayU_limited[index] = -1
             else:
                 arrayU_limited[index] = self.__arrayU[index]
 
         self.__arrayU = arrayU_limited
-        self.update_memory_arrayU_list(self.__arrayU)
-        co
-        return arrayU_limited
+        print(f"[STATUS] -> New potency array: {self.__arrayU}")
+        #return arrayU_limited
 
     def post_upadate_arrayU(self) -> np.ndarray:
         """this method is used to post updated power values

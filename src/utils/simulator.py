@@ -88,9 +88,12 @@ class Simulator:
             for j in range(len(aux_matrixA_values[i])):
                 if i == j:
                     aux_matrixA_values[i][j] = 1
+                else:
+                     aux_matrixA_values[i][j] =  aux_matrixA_values[i][j]/10
 
-        print("Initializing matrix A with random values and unit diagonal")         
-        return aux_matrixA_values.tolist()
+        print("Initializing matrix A with random values and unit diagonal")
+        print(aux_matrixA_values)         
+        return aux_matrixA_values
 
     def __generate_matrixB_values(self) -> np.ndarray:
         """This method is used to initialize diagonal matrix B representing the nth interaction 
@@ -116,24 +119,28 @@ class Simulator:
         Args: array with the new powers to reach the desired temperature
         Return: array T with updated values      
         """
-        temp = np.empty(self.__nEnvironment)
+        print("Calculating the new temperature data for the environments")
+        temp = np.zeros(self.__nEnvironment)
         for i in range(len(temp)):
             for j in range(len(self.__matrixA[i])):
-                temp[i] += (self.__matrixA[i][j]*(self.__arrayT[j] - self.__arrayT[i]))
-
-            temp[i] += self.__matrixB[i][i]*arrayU[i]
+                if i != j:
+                    temp[i] += (self.__matrixA[i][j]*(self.__arrayT[j] - self.__arrayT[i])) + self.__matrixB[i][i]*arrayU[i]
+                else:
+                    temp[i] += self.__matrixB[i][i]*arrayU[i]
             temp[i] = round(temp[i], 2)
 
         aux = self.__arrayT + temp  
         self.update_memory_list(aux)        
         self.__arrayT = aux
-        return aux
+        print(f"[STATUS] -> New Temperature array: {self.__arrayT}")
+        #return aux
 
     def update_memory_list(self, arrayT: np.ndarray) -> None:
         """this method is used to store in memory the array containing the temperature of the environments
         Args: instance of Simulator class
         Return: array T with updated values      
         """
+        print("Storing the temperature values of the environments")
         self.__memory.append(arrayT)
 
     def post_temperature_status(self) -> np.ndarray:
@@ -145,10 +152,10 @@ class Simulator:
         print("sending the temperature information of the environments")
         return self.__memory[-1]
 
-    def get_arrayU(self, client, data_dict: dict) -> np.ndarray:
+    def get_arrayU(self, other) -> np.ndarray:
         """this method is used to request the sending of temperature information from the 
            control center to the simulator 
         Args: instance of ControlCenter class
         Return: array T with updated values      
         """
-        return client.subscribe(data_dict)
+        return other.post_upadate_arrayU()
