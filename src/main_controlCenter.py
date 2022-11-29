@@ -1,55 +1,55 @@
+import repackage
 import importlib
-import os, sys, time, json, random
+import os
+import sys
+import time
+import json
+import random
 import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as pmqttSub
 import paho.mqtt.publish as pmqttPub
 import numpy as np
 SCRIPT_DIR = os.path.dirname(os.path.abspath("src/utils/conect_mqtt.py"))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-import repackage
 repackage.up()
 from utils import simulator, control_center, conect_mqtt
 importlib.reload(simulator)
 importlib.reload(control_center)
 importlib.reload(conect_mqtt)
 
-#numero de ambientes
-nEnvironments = 1
+
+global topic
+topic = "Potencia"
+global ctrl_center
+global ctrl
+# numero de ambientes
+
+nEnvironments = 4
 timesleep = 10
+potency_limit=1200
+conectMqtt = mqtt.Client()
+conectMqtt.connect("localhost")
+ctrl = conect_mqtt.ConectMqtt()
+ctrl.start_connection_tago()
+ctrl_center = control_center.ControlCenter(
+    nEnvironment=nEnvironments, potency_limit=potency_limit, Ttarget=30.0)
 
-#inicializando os objetos de simulação dos ambientes e a central de controle
-controlC = control_center.ControlCenter(nEnvironments, 1200)
-conectMqtt = conect_mqtt.ConectMqtt()
-conectMqtt.start_connection_tago()
-time.sleep(1)
-##################
-new_temperatureValues = conectMqtt.subscribe(nEnvironments=nEnvironments, topic_type="temperatura")
-print(f"Temperatura inicial: {new_temperatureValues}")
-time.sleep(.2)
-new_potencyValues = controlC.update_arrayU(new_temperatureValues)
-conectMqtt.publish_mosquitto(nEnvironments, topic_type="potencia", data_values=controlC.arrayU)
-controlC.update_memory_arrayT_list(new_temperatureValues)
+def call_back_potencia(client, userdata, message):
 
-controlC.update_memory_arrayU_list(controlC.arrayU)
+    new_temperatureValues = np.frombuffer(
+        message.payload, dtype=np.float32)
+    print(f"New Temperature array: {new_temperatureValues}")
 
-time.sleep(.3)
-conectMqtt.publish_tago(client=conectMqtt.client, type_data="potencia", data_values=controlC.arrayU, mqttPT=conectMqtt.mqtt_publish_topic)
-
-time.sleep(3)
-i = 0
-while True:
-    i += 1
-    if i == 1:
-        new_temperatureValues = conectMqtt.subscribe(nEnvironments=nEnvironments, topic_type="temperatura")
-        new_potencyValues = controlC.update_arrayU(new_temperatureValues)
-        conectMqtt.publish_tago(client=conectMqtt.client, type_data="potencia", data_values=controlC.arrayU, mqttPT=conectMqtt.mqtt_publish_topic)
-        controlC.update_memory_arrayT_list(new_temperatureValues)
-        
-        time.sleep(.3)
-        conectMqtt.publish_mosquitto(nEnvironments, topic_type="potencia", data_values=controlC.arrayU)
-        time.sleep(.1)
-        print(f"memória dos valores de temperatura: {controlC.memory_arrayT[-1]}")
-        print(f"memória dos valores de potencia: {controlC.memory_arrayU[-1]}")
-        i = 0
-        time.sleep(2)
+    new_potencyValues = ctrl_center.update_arrayU(new_temperatureValues)
+    new_potencyBit = new_potencyValues.tobytes()
+    ctrl.publish_tago(ctrl.client_tago, "Potencia", new_potencyValues*potency_limit, ctrl.mqtt_publish_topic)
+    client.publish("Potencia", payload=new_potencyBit)
     
+    time.sleep(.5)
+
+ctrl.publish_tago(ctrl.client_tago, "Potencia", ctrl_center.arrayU*potency_limit, ctrl.mqtt_publish_topic)
+conectMqtt.subscribe("Temperatura")
+conectMqtt.message_callback_add("Temperatura", call_back_potencia)
+
+
+conectMqtt.loop_forever()

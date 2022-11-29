@@ -17,9 +17,9 @@ class Simulator:
         """
         self.__nEnvironment = nEnvironment
         self.__l, self.__h = interval
-        self.__matrixA = self.__generate_matrixA_values() if matrixA is None else matrixA
-        self.__matrixB = self.__generate_matrixB_values() if matrixB is None else matrixB
-        self.__arrayT = self.__generate_arrayT_values() if arrayT is None else arrayT.T
+        self.__matrixA = self.__generate_matrixA_values() if matrixA is None else np.array(matrixA, dtype=np.float32)
+        self.__matrixB = self.__generate_matrixB_values() if matrixB is None else np.array(matrixB, dtype=np.float32)
+        self.__arrayT = self.__generate_arrayT_values() if arrayT is None else np.array(arrayT, dtype=np.float32)
         self.__memory = [self.__arrayT]
         
 
@@ -92,9 +92,9 @@ class Simulator:
                 else:
                      aux_matrixA_values[i][j] =  aux_matrixA_values[i][j]/10
 
-        print("Initializing matrix A with random values and unit diagonal")
+        print("[STATUS] -> Initializing matrix A with random values and unit diagonal")
         #print(aux_matrixA_values)         
-        return aux_matrixA_values
+        return aux_matrixA_values.astype(np.float32)
 
     def __generate_matrixB_values(self) -> np.ndarray:
         """This method is used to initialize diagonal matrix B representing the nth interaction 
@@ -102,17 +102,17 @@ class Simulator:
         Args: None
         Return: diagonal np.ndarray with dimensions (nEnvironment x nEnvironment)      
         """
-        print("Initializing the diagonal matrix B")
-        return np.eye(self.__nEnvironment, dtype=float)
+        print("[STATUS] -> Initializing the diagonal matrix B")
+        return np.eye(self.__nEnvironment, dtype=np.float32)
  
     def __generate_arrayT_values(self) -> np.ndarray:
         """This method is used to initialize array T with random values in the range between [15,35].
         Args: None
         Return: np.ndarray with dimensions (nEnvironment) which represents the array of Temperature      
         """
-        print(f"Initializing the temperature array with random values between {self.__l} and {self.__h}")
+        print(f"[STATUS] -> Initializing the temperature array with random values between {self.__l} and {self.__h}")
 
-        return np.random.randint(low=18, high=22, size=self.__nEnvironment).T
+        return np.random.randint(low=18, high=22, size=self.__nEnvironment).astype(np.float32)
 
 
     def update_arrayT(self, arrayU) -> None:
@@ -120,19 +120,20 @@ class Simulator:
         Args: array with the new powers to reach the desired temperature
         Return: array T with updated values      
         """
-        print("Calculating the new temperature data for the environments")
-        temp = np.zeros(self.__nEnvironment)
+        print("[STATUS] -> Calculating the new temperature data for the environments")
+        temp = np.zeros(self.__nEnvironment, dtype=np.float32)
         for i in range(len(temp)):
-            for j in range(len(self.__matrixA[i])):
+            for j in range(len(temp)):
                 if i != j:
                     temp[i] += (self.__matrixA[i][j]*(self.__arrayT[j] - self.__arrayT[i])) + self.__matrixB[i][i]*arrayU[i]
                 else:
                     temp[i] += self.__matrixB[i][i]*arrayU[i]
-            temp[i] = round(temp[i], 2)
+            temp[i] = temp[i]
 
-        aux = self.__arrayT + temp  
+        aux = np.round(self.__arrayT + temp, 2)
         self.update_memory_list(aux)        
         self.__arrayT = aux
+        #print(f"arryT atualizado: {aux}")
         print(f"[STATUS] -> New Temperature array: {self.__arrayT}")
         return aux
 
@@ -141,7 +142,7 @@ class Simulator:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
-        print("Storing the temperature values of the environments")
+        print("[STATUS] -> Storing the temperature values of the environments")
         self.__memory.append(arrayT)
 
     def post_temperature_status(self) -> np.ndarray:
@@ -150,7 +151,7 @@ class Simulator:
         Args: instance of ControlCenter class
         Return: array T with updated values      
         """
-        print("sending the temperature information of the environments")
+        print("[STATUS] -> sending the temperature information of the environments")
         return self.__memory[-1]
 
     def get_arrayU(self, other) -> np.ndarray:

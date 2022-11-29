@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline
 import random
 
-def plot_line(df: pd.DataFrame, str,enviroment_id: str, title: str = "versus Time") -> None:
-    x = np.arange(df.shape[0])
-    y_t = df[f"T_{enviroment_id}"]
-    y_p = df[f"P_{enviroment_id}"]
+def plot_line(df: pd.DataFrame, enviroment_id: str,  timesleep: int, title: str = "versus Time") -> None:
+    df["time, s"] = np.arange(df.shape[0])
+    x = df["time, s"].apply(lambda x: x+timesleep*0.2)
+    y_t = df[f"Temperature_{enviroment_id}"]
+    y_p = df[f"Potency_{enviroment_id}"].apply(lambda x: x*1200 if x*1200 <= 1200 else 1200)
     y_Tinterpolate = make_interp_spline(x, y_t)
     y_Pinterpolate = make_interp_spline(x, y_p)
     X = np.linspace(x.min(), x.max(), 500)
@@ -18,12 +19,14 @@ def plot_line(df: pd.DataFrame, str,enviroment_id: str, title: str = "versus Tim
     plt.subplot(121)
     plt.plot(X, Y_p)
     plt.title(f"Potency {title} in {enviroment_id}")
+    plt.xlabel("Time, s")
+    plt.ylabel("Potency, BTU/milhão")
     
     plt.subplot(122)
     plt.plot(X, Y_t)
     plt.title(f"Temperature {title} in {enviroment_id}")
-    plt.xlabel("X")
-    plt.ylabel("Y")
+    plt.xlabel("Time, s")
+    plt.ylabel("Temperature, °C")
     plt.show()
 
 

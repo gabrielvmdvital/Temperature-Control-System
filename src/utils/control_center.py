@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import random
 import matplotlib.pyplot as plt
 import repackage
@@ -24,9 +25,9 @@ class ControlCenter:
         self.__nEnvironment = nEnvironment
         self.potency_limit = potency_limit
         self.l, self.h = interval
-        self.__arrayU = np.zeros(self.__nEnvironment, dtype=float) if arrayU is None else arrayU
-        self.__Ttarget = np.full(self.__nEnvironment, 20.0) if Ttarget is None else Ttarget
-        self.__matrixP = self.__generate_matrixP_values() if matrixP is None else matrixP
+        self.__arrayU = np.zeros(self.__nEnvironment, dtype=np.float32) if arrayU is None else np.array(arrayU, dtype=np.float32)
+        self.__Ttarget = np.full(self.__nEnvironment, 20.0, dtype=np.float32) if Ttarget is None else Ttarget
+        self.__matrixP = self.__generate_matrixP_values() if matrixP is None else np.array(matrixP, dtype=np.float32)
         self.__memory_arrayT = []
         self.__memory_arrayU = [self.__arrayU]
 
@@ -85,13 +86,13 @@ class ControlCenter:
         Return: np.ndarray with dimensions (nEnvironment x nEnvironment) which represents the matrix P     
         """
         print("Initializing the diagonal matrix P")
-        aux_matrix = np.eye(self.__nEnvironment, dtype=float)
+        aux_matrix = np.eye(self.__nEnvironment, dtype=np.float32)
         for i in range(len(aux_matrix)):
             for j in range(len(aux_matrix[i])):
                 if i == j:
                     aux_matrix[i][j] = random.randint(1, 2) + random.random()
         #print(aux_matrix/10)
-        return aux_matrix/10
+        return aux_matrix/100
 
     def update_arrayU(self, arrayT: np.ndarray) -> None:
         """This method is used to update the values of the array of Potency
@@ -99,15 +100,15 @@ class ControlCenter:
         Return: array of potency with updated values
         """
         print("Calculating the new power data for the system")
-        arrayU_limited = np.empty(self.__nEnvironment, dtype=float)
+        arrayU_limited = np.empty(self.__nEnvironment, dtype=np.float32)
         self.__arrayU = np.dot(self.__matrixP, (self.__Ttarget - arrayT))
         for index in range(len(self.__arrayU)):
-            if self.__arrayU[index] > 1:
+            if self.__arrayU[index] >= 1:
                 arrayU_limited[index] = 1
-            if self.__arrayU[index] < -1:
+            elif self.__arrayU[index] <= -1:
                 arrayU_limited[index] = -1
             else:
-                arrayU_limited[index] = self.__arrayU[index]
+                arrayU_limited[index] = np.round(self.__arrayU[index], 2)
 
         self.__arrayU = arrayU_limited
         self.update_memory_arrayU_list(arrayU_limited)
@@ -119,7 +120,7 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
-        print("Sending the new power values")
+        print("[STATUS] -> Sending the new power values")
         return self.__memory_arrayU[-1]
 
     def get_arrayT(self, other) -> np.ndarray:
@@ -128,7 +129,7 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
-        print("Requesting room temperature data")
+        print("[STATUS] -> Requesting room temperature data")
         return other.post_temperature_status()
 
     def update_memory_arrayT_list(self, arrayT) -> None:
@@ -136,7 +137,7 @@ class ControlCenter:
         Args: instance of Simulator class
         Return: array T with updated values      
         """
-        print("Storing the temperature values of the environments")
+        print("[STATUS] -> Storing the temperature values of the environments")
         self.__memory_arrayT.append(arrayT)
 
     def update_memory_arrayU_list(self, arrayU) -> None:
@@ -144,7 +145,7 @@ class ControlCenter:
         Args: None
         Return: array T with updated values      
         """
-        print("Storing the new power data for the system")
+        print("[STATUS] -> Storing the new power data for the system")
         self.__memory_arrayU.append(arrayU)
 
     
@@ -153,4 +154,11 @@ class ControlCenter:
         Args: None
         Return: tuple of np.ndarray containing temperature and power data for each environment      
         """
-        return np.column_stack(self.__memory_arrayT), np.column_stack(self.__memory_arrayU)
+        temps = np.column_stack(self.__memory_arrayT)
+        pots = np.column_stack(self.__memory_arrayU)
+        dict_to_df = {}
+        dict_temps = {f"Temperature_environment{i}": temps[i]  for i in range(len(temps))}
+        dict_pots = {f"Potency_environment{i}": pots[i] for i in range(len(pots))}
+        dict_to_df.update(dict_temps)
+        dict_to_df.update(dict_pots)
+        return pd.DataFrame(dict_to_df)
